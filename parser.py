@@ -143,7 +143,7 @@ def checkCode(content):
         return False
 
     # Check for at least one method calls
-    listOfFunctionNames = re.findall("\.[A-Za-z][A-Za-z0-9_]*\(", codeSegment)
+    listOfFunctionNames = re.findall("\.[A-Za-z][A-Za-z0-9_]*\(", content)
     if len(listOfFunctionNames) == 0:
         return False
 
