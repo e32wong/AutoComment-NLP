@@ -1,12 +1,14 @@
+#!/usr/bin/python
+
 import HTMLParser
 import os
 import re
 import shutil
 
-# gather a list of post questions
+# edit these variables
 tag = "java"
 targetFolder = "/home/edmund/research/autocomment/posts/java/"
-postFile = "/home/edmund/research/autocomment/posts/test.xml"
+postFile = "/home/edmund/research/autocomment/posts/Posts.xml"
 
 if not os.path.exists(targetFolder):
     os.makedirs(targetFolder)
@@ -33,7 +35,6 @@ with open(postFile, "r") as f:
                     tagListEsc = html_parser.unescape(tagListOrg)
 
                     if "<" + tag + ">" in tagListEsc:
-                        print tagListEsc
 
                         listPosts.append(listPosts)
 
@@ -50,9 +51,12 @@ with open(postFile, "r") as f:
             m = re.match(".+\\bParentId=\"([0-9]+)\".+", line)
             if m:
                 parentID = m.group(1)
-
-                f = open(targetFolder + parentID, 'a')
-                f.write(line)
-                print "Appended to " + parentID
+                parentFile = targetFolder + parentID
+                # make sure the parent file exist
+                if os.path.isfile(parentFile):
+                    f = open(parentFile, 'a')
+                    f.write(line)
+                    print "Appended to " + parentID
+                    f.close()
 
 
