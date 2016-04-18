@@ -35,24 +35,60 @@ public class CommentParser2 {
     }
   }
 
-  static String replacePattern(String comment, String sourcePattern, String replaceStr) {
-    // Replace the given pattern with the 
-    comment = comment.replaceAll(sourcePattern, replaceStr);
-    return comment;
-  }
+    static String encryptLine(ArrayList<String> listTerms1, ArrayList<String> listTerms2, 
+            ArrayList<String> listTerms3, String line) {
 
-  static String encryptLine(ArrayList<String> listTerms, String line) {
-    // Replace "." with "@@" to avoid confusion on the sentence splitter
-    String pat = "([a-zA-Z])(\\.)([a-zA-Z])";
-    line = line.replaceAll(pat, "$1@@$3");
-    
-    // Replace camelcase terms with the word, item
-    //Pattern pattern = Pattern.compile("\b[A-Z][a-z]*([A-Z][a-z]*)*\b");
+        // Replace "." with "@@" to avoid confusion on the sentence splitter
+        String pat = "([a-zA-Z])(\\.)([a-zA-Z])";
+        line = line.replaceAll(pat, "$1@@$3");
+ 
+        pat = "(\\b([A-Z_][a-z_0-9]*)([A-Z_][a-z_0-9]+)+\\b)";
+        Pattern pattern = Pattern.compile(pat);
+        Matcher m = pattern.matcher(line);
+        while (m.find()) {
+            listTerms1.add(m.group(0));
+        }
+        line = line.replaceAll(pat, "1item1");
+       
+        pat = "\\b([a-z_][a-z_0-9]*)([A-Z_][a-z_0-9]+)+\\b";
+        pattern = Pattern.compile(pat);
+        m = pattern.matcher(line);
+        while (m.find()) {
+            listTerms2.add(m.group(0));
+        }
+        line = line.replaceAll(pat, "2item2");
 
-    return line;
-  }
+        pat = "\\b[A-Z0-9_]{3,}\\b";
+        pattern = Pattern.compile(pat);
+        m = pattern.matcher(line);
+        while (m.find()) {
+            listTerms3.add(m.group(0));
+        }
+        line = line.replaceAll(pat, "3item3");
 
-    static String decryptLine(String line) {
+        return line;
+    }
+
+    static String decryptLine(ArrayList<String> listTerms1, ArrayList<String> listTerms2,
+                        ArrayList<String> listTerms3, String line) {
+
+        while (listTerms3.isEmpty() != true) {
+            String term = listTerms3.get(0);
+            line = line.replace("3item3",term);
+            listTerms3.remove(0);
+        }
+
+        while (listTerms2.isEmpty() != true) {
+            String term = listTerms2.get(0);
+            line = line.replace("2item2",term);
+            listTerms2.remove(0);
+        }
+
+        while (listTerms1.isEmpty() != true) {
+            String term = listTerms1.get(0);
+            line = line.replace("1item1",term);
+            listTerms1.remove(0);
+        }
 
         // Replace "." with "@@" to avoid confusion on the sentence splitter
         String pat = "([a-zA-Z])(@@)([a-zA-Z])";
@@ -61,8 +97,9 @@ public class CommentParser2 {
     }
 
     static String cleanSentence(String text) {
-        
         String finalText = "";
+
+        System.out.println("Before: " + text);
 
         String[] listLines = text.split("(?<!\\w\\.\\w.)(?<![A-Z][a-z]\\.)(?<=\\.|\\?)\\s");
         for (String line : listLines) { 
@@ -74,10 +111,19 @@ public class CommentParser2 {
             line = line.replaceAll("\\s+$", "");
 
             // Replace the "i" with "I"
-            line = line.replaceAll("\bi\b", "I");
+            line = line.replaceAll("\\bi\\b", "I");
 
             // Replace "..." with "."
             line = line.replaceAll("\\s*\\.{2,}", ".");
+
+            // Expand short form
+            line = line.replaceAll("can't\\b", "cannot");
+            line = line.replaceAll("won't\\b", "will not");
+            line = line.replaceAll("shan't\\b", "shall not");
+            line = line.replaceAll("n't\\b", " not");
+            line = line.replaceAll("'ll\\b", " will");
+            line = line.replaceAll("I'm\\b", "I am");
+            line = line.replaceAll("'ve\\b", "have");
 
             // Replace ":" with "."
             line = line.replaceAll("\\s*:", ".");
@@ -104,7 +150,6 @@ public class CommentParser2 {
 
             finalText = finalText + " " + line;
         }
-        System.out.println(finalText);
         return finalText;
     } 
 
@@ -115,8 +160,10 @@ public class CommentParser2 {
         line = cleanSentence(line);
 
         // Replace "." with "@"
-        ArrayList<String> listTerms = new ArrayList<String>();
-        line = encryptLine(listTerms, line);
+        ArrayList<String> listTerms1 = new ArrayList<String>();
+        ArrayList<String> listTerms2 = new ArrayList<String>();
+        ArrayList<String> listTerms3 = new ArrayList<String>();
+        line = encryptLine(listTerms1, listTerms2, listTerms3, line);
 
         // Process the line
         Annotation annotation = new Annotation(line);
@@ -268,8 +315,8 @@ public class CommentParser2 {
         }
 
         // Convert encrypted characters back to original
-        processedString = decryptLine(processedString);
-
+        processedString = decryptLine(listTerms1, listTerms2, listTerms3, processedString);
+        System.out.println("Final: " + processedString);
         return processedString;
     }
   
