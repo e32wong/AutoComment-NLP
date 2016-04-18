@@ -41,31 +41,22 @@ public class CommentParser2 {
     return comment;
   }
 
-  static String encryptLine(String line) {
+  static String encryptLine(ArrayList<String> listTerms, String line) {
     // Replace "." with "@@" to avoid confusion on the sentence splitter
-    Pattern pattern = Pattern.compile("[a-zA-Z](\\.)[^\\s\\.]");
-    while (true) {
-      Matcher matcher = pattern.matcher(line);
-      if (matcher.find()) {
-        line = line.substring(0, matcher.start(1)) + "@@" + line.substring(matcher.end(1), line.length());
-      } else {
-        break;
-      }
-    }
+    String pat = "([a-zA-Z])(\\.)([a-zA-Z])";
+    line = line.replaceAll(pat, "$1@@$3");
+    
+    // Replace camelcase terms with the word, item
+    //Pattern pattern = Pattern.compile("\b[A-Z][a-z]*([A-Z][a-z]*)*\b");
+
     return line;
   }
 
     static String decryptLine(String line) {
-        // Replace "@@" with "." for end user presentation
-        Pattern pattern = Pattern.compile("[a-zA-Z](@@)[^\\s]");
-        while (true) {
-          Matcher matcher = pattern.matcher(line);
-          if (matcher.find()) {
-            line = line.substring(0, matcher.start(1)) + "." + line.substring(matcher.end(1), line.length());
-          } else {
-            break;
-          }
-        }
+
+        // Replace "." with "@@" to avoid confusion on the sentence splitter
+        String pat = "([a-zA-Z])(@@)([a-zA-Z])";
+        line = line.replaceAll(pat, "$1\\.$3");
         return line;
     }
 
@@ -124,7 +115,8 @@ public class CommentParser2 {
         line = cleanSentence(line);
 
         // Replace "." with "@"
-        line = encryptLine(line);
+        ArrayList<String> listTerms = new ArrayList<String>();
+        line = encryptLine(listTerms, line);
 
         // Process the line
         Annotation annotation = new Annotation(line);
