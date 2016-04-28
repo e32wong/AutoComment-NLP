@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
@@ -406,6 +407,9 @@ public class CommentParser2 {
             }
         }
 
+        // timer
+        long startTime = System.currentTimeMillis();
+
         // Loadup a list of stopwords for sentences
         loadStopWord();
 
@@ -421,6 +425,7 @@ public class CommentParser2 {
         if (execMode == 1) {
             // Folder execution mode - 1
             // Obtain a list of files from the folder
+            int numOutputFiles = 0;
             File folder = new File(dataSourcePath);
             String listOfFiles[] = folder.list();
 
@@ -428,7 +433,9 @@ public class CommentParser2 {
             for (int i = 0; i < listOfFiles.length; i++) {
 
                 // Parse the file name from the relative path
-                Matcher m = p.matcher(listOfFiles[i]);
+                String fileNameFull = listOfFiles[i];
+                System.out.println(fileNameFull);
+                Matcher m = p.matcher(fileNameFull);
                 String fileNameOnly = "";
                 if (m.find()) {
                     fileNameOnly = m.group(0);
@@ -455,6 +462,9 @@ public class CommentParser2 {
 
                 // Only make new file if there is at least one comment
                 if (line1.length() > 2 || line2.length() > 2) {
+                    // Increment
+                    numOutputFiles = numOutputFiles + 1;
+
                     // Generate a new file, launch new stream
                     FileWriter fw = new FileWriter(dataOutputPath + "/" + fileNameOnly + ".map");
                     BufferedWriter bw = new BufferedWriter(fw);
@@ -472,7 +482,12 @@ public class CommentParser2 {
 
                 // Close the source file
                 br.close();
+
+                System.out.println("");
             }
+
+            System.out.println("Written a total of " + numOutputFiles + " files");
+
         } else if (execMode == 0){
             // Single file mode - 0
             try {
@@ -497,7 +512,13 @@ public class CommentParser2 {
             String line = args[1];
             System.out.print(processLine(line, pipeline));
         }
-
+        long estimatedTime = System.currentTimeMillis() - startTime;
+        String runtime = String.format("%d min, %d sec", 
+            TimeUnit.MILLISECONDS.toMinutes(estimatedTime),
+            TimeUnit.MILLISECONDS.toSeconds(estimatedTime) - 
+            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(estimatedTime))
+        );
+        System.out.println("Execution time: " + runtime);
     }
 
 }
