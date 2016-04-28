@@ -20,20 +20,20 @@ import edu.stanford.nlp.pipeline.Annotation;
 
 public class CommentParser2 {
 
-  static String stopWordPattern;
+    static String stopWordPattern;
 
-  static void removeTag(Tree tree, String posPattern) {
+    static void removeTag(Tree tree, String posPattern) {
 
-    TregexPattern p1 = TregexPattern.compile(posPattern);
-    TregexMatcher m1 = p1.matcher(tree);
+        TregexPattern p1 = TregexPattern.compile(posPattern);
+        TregexMatcher m1 = p1.matcher(tree);
 
-    while (m1.find()) {
-      Tree matchedTree = m1.getMatch();
-      Tree parentTree = matchedTree.parent(tree);
-      int index = parentTree.objectIndexOf(matchedTree);
-      parentTree.removeChild(index);
+        while (m1.find()) {
+            Tree matchedTree = m1.getMatch();
+            Tree parentTree = matchedTree.parent(tree);
+            int index = parentTree.objectIndexOf(matchedTree);
+            parentTree.removeChild(index);
+        }
     }
-  }
 
     static String encryptLine(ArrayList<String> listTerms1, ArrayList<String> listTerms2, 
             ArrayList<String> listTerms3, String line) {
@@ -41,7 +41,7 @@ public class CommentParser2 {
         // Replace "." with "@@" to avoid confusion on the sentence splitter
         String pat = "([a-zA-Z])(\\.)([a-zA-Z])";
         line = line.replaceAll(pat, "$1@@$3");
- 
+
         pat = "(\\b([A-Z_][a-z_0-9]*)([A-Z_][a-z_0-9]+)+\\b)";
         Pattern pattern = Pattern.compile(pat);
         Matcher m = pattern.matcher(line);
@@ -49,7 +49,7 @@ public class CommentParser2 {
             listTerms1.add(m.group(0));
         }
         line = line.replaceAll(pat, "1item1");
-       
+
         pat = "\\b([a-z_][a-z_0-9]*)([A-Z_][a-z_0-9]+)+\\b";
         pattern = Pattern.compile(pat);
         m = pattern.matcher(line);
@@ -70,7 +70,7 @@ public class CommentParser2 {
     }
 
     static String decryptLine(ArrayList<String> listTerms1, ArrayList<String> listTerms2,
-                        ArrayList<String> listTerms3, String line) {
+            ArrayList<String> listTerms3, String line) {
 
         while (listTerms3.isEmpty() != true) {
             String term = listTerms3.get(0);
@@ -153,6 +153,24 @@ public class CommentParser2 {
         return finalText;
     } 
 
+    static void loadStopWord() {
+        // Obtain a list of stop words from the file
+        // And compose a string for the pattern
+        stopWordPattern = "";
+        String line;
+        try {
+            BufferedReader br = new BufferedReader (
+                    new FileReader("./negative.txt"));
+            while ((line = br.readLine()) != null) {
+                stopWordPattern += "\\b" + line + "\\b|";
+            }
+            stopWordPattern = stopWordPattern.substring(0,stopWordPattern.length()-1);
+        } catch (IOException e) {
+            System.out.println("Error while reading stopword file" + e);
+            System.exit(0);
+        }
+    }
+
     static String processLine(String line, StanfordCoreNLP pipeline) {
         // return string
         String processedString = "";
@@ -175,38 +193,38 @@ public class CommentParser2 {
         List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
         // Process one sentence at a time
         for(CoreMap sentence: sentences) {
-            
+
             // this is the parse tree of the current sentence
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             //tree.pennPrint();
 
             /*
-            Tree sentTree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
-            int sentimentScore = RNNCoreAnnotations.getPredictedClass(sentTree);
-            switch (sentimentScore) {
-                case 0:
-                    System.out.println("Very Negative");
-                    break;
-                case 1:
-                    System.out.println("Negative");
-                    break;
-                case 2:
-                    System.out.println("Neutral");
-                    break;
-                case 3:
-                    System.out.println("Positive");
-                    break;
-                case 4:
-                    System.out.println("Very Positive");
-                    break;
-                default:
-                    System.out.println("Error");
-                    break;
-            }
-            if (sentimentScore <= 1) {
-                continue;
-            }
-            */
+               Tree sentTree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
+               int sentimentScore = RNNCoreAnnotations.getPredictedClass(sentTree);
+               switch (sentimentScore) {
+               case 0:
+               System.out.println("Very Negative");
+               break;
+               case 1:
+               System.out.println("Negative");
+               break;
+               case 2:
+               System.out.println("Neutral");
+               break;
+               case 3:
+               System.out.println("Positive");
+               break;
+               case 4:
+               System.out.println("Very Positive");
+               break;
+               default:
+               System.out.println("Error");
+               break;
+               }
+               if (sentimentScore <= 1) {
+               continue;
+               }
+               */
 
             // regex for matching
             TregexPattern p1 = TregexPattern.compile("VP << (NP < /NN.?/) < /VB.?/");
@@ -246,7 +264,7 @@ public class CommentParser2 {
 
             // Discard sentence if it is too short
             if (listOfLeaves.size() < 3) {
-              continue;
+                continue;
             }
 
             //String sentenceString = sentence.toString();
@@ -259,7 +277,7 @@ public class CommentParser2 {
                 int end = Integer.parseInt(((CoreLabel)listOfLeaves.get(i).label()).get(CharacterOffsetEndAnnotation.class).toString());
                 //System.out.println(begin);
                 //System.out.println(end);
-                 
+
                 if (begin != -1) {
                     thisSentence += line.substring(begin, end);
                     if (i < listOfLeaves.size()-1) {
@@ -321,7 +339,7 @@ public class CommentParser2 {
         System.out.println("Final: " + processedString);
         return processedString;
     }
-  
+
     public static void main(String[] args) throws IOException {
         // Verify user input
         if (args.length < 2) {
@@ -350,7 +368,7 @@ public class CommentParser2 {
 
         // Compile the patterns for extracting file name
         Pattern p = Pattern.compile("[^/]+$");
-        
+
         if (execMode == 1) {
             // Folder execution mode - 1
             // Obtain a list of files from the folder
@@ -359,7 +377,7 @@ public class CommentParser2 {
 
             // Process all the files
             for (int i = 0; i < listOfFiles.length; i++) {
-                
+
                 // Parse the file name from the relative path
                 Matcher m = p.matcher(listOfFiles[i]);
                 String fileNameOnly = "";
@@ -391,7 +409,7 @@ public class CommentParser2 {
                     // Generate a new file, launch new stream
                     FileWriter fw = new FileWriter(dataOutputPath + "/" + fileNameOnly + ".map");
                     BufferedWriter bw = new BufferedWriter(fw);
-                    
+
                     // Write to file
                     bw.write(line1 + "\n");
                     bw.write(line2 + "\n");
@@ -430,7 +448,7 @@ public class CommentParser2 {
             System.out.print(processLine(line, pipeline));
         }
 
-      }
+    }
 
 }
 
