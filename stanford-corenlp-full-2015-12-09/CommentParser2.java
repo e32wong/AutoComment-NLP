@@ -430,6 +430,7 @@ public class CommentParser2 {
             String listOfFiles[] = folder.list();
 
             // Process all the files
+            int totalNumFiles = listOfFiles.length;
             for (int i = 0; i < listOfFiles.length; i++) {
 
                 // Parse the file name from the relative path
@@ -485,8 +486,8 @@ public class CommentParser2 {
 
                 System.out.println("");
             }
-
-            System.out.println("Written a total of " + numOutputFiles + " files");
+            System.out.println("Initial num files: " + totalNumFiles);
+            System.out.println("Num output files: " + numOutputFiles);
 
         } else if (execMode == 0){
             // Single file mode - 0
