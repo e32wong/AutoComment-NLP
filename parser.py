@@ -72,6 +72,11 @@ def removeHTMLtags(string):
 
     return string
 
+def removeComments(string):
+    string = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,string) # remove all occurance streamed comments (/*COMMENT */) from string
+    string = re.sub(re.compile("//.*?\n" ) ,"" ,string) # remove all occurance singleline comments (//COMMENT\n ) from string
+    return string
+
 # Input is an array of answer's body
 # Output is an array of tuples of (codeDescription, codeSegment)
 def extractCode(listOfBodies, extractMode):
@@ -108,6 +113,8 @@ def extractCode(listOfBodies, extractMode):
                 if checkCode(match[2]) == False:
                     continue
 
+                cleanCode = removeComments(match[2])
+
                 # Capture the first code-description mapping
                 description = removeHTMLtags(match[1])
                 codeDescription = description
@@ -119,7 +126,7 @@ def extractCode(listOfBodies, extractMode):
                         codeDescription = codeDescription + " " + description
 
                 # Add the description/code pair
-                mappingList.append((codeDescription,match[2]))
+                mappingList.append((codeDescription,cleanCode))
 
     return mappingList
 
