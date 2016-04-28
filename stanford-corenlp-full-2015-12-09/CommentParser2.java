@@ -392,8 +392,8 @@ public class CommentParser2 {
                 System.exit(0);
             } else {
                 // Number of arguments is correct
-                dataOutputPath = f.getAbsolutePath();
                 f = new File(dataOutputPath);
+                dataOutputPath = f.getAbsolutePath();
                 if (f.exists()) {
                     // Warn user
                     System.out.println("Output folder already exists");
