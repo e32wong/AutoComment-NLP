@@ -3,8 +3,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
-import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+//import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
+//import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 
 import edu.stanford.nlp.io.*;
 import edu.stanford.nlp.ling.*;
@@ -180,6 +180,7 @@ public class CommentParser2 {
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             //tree.pennPrint();
 
+            /*
             Tree sentTree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
             int sentimentScore = RNNCoreAnnotations.getPredictedClass(sentTree);
             switch (sentimentScore) {
@@ -205,6 +206,7 @@ public class CommentParser2 {
             if (sentimentScore <= 1) {
                 continue;
             }
+            */
 
             // regex for matching
             TregexPattern p1 = TregexPattern.compile("VP << (NP < /NN.?/) < /VB.?/");
@@ -387,7 +389,7 @@ public class CommentParser2 {
                 // Only make new file if there is at least one comment
                 if (line1.length() > 2 || line2.length() > 2) {
                     // Generate a new file, launch new stream
-                    FileWriter fw = new FileWriter(dataOutputPath + "/" + fileNameOnly);
+                    FileWriter fw = new FileWriter(dataOutputPath + "/" + fileNameOnly + ".map");
                     BufferedWriter bw = new BufferedWriter(fw);
                     
                     // Write to file
