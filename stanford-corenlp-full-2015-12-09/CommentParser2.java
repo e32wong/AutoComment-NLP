@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.nio.file.Files;
 
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
@@ -369,7 +370,8 @@ public class CommentParser2 {
     public static void main(String[] args) throws IOException {
         // Verify user input
         if (args.length < 2) {
-            System.out.println("Missing arguments, exiting: mode(0-file/1-folder/2-argument) dataSource outputFolder");
+            System.out.println("Missing arguments, exiting:" + 
+                    "mode(0-file/1-folder/2-argument) dataSource [outputFolder]");
             System.exit(0);
         }
 
@@ -377,13 +379,27 @@ public class CommentParser2 {
         int execMode = Integer.parseInt(args[0]);
         String dataSourcePath = args[1];
         String dataOutputPath = "";
-        if (execMode == 1 && args.length != 3) {
-            System.out.println("Missing output folder");
+        // Check if input exists
+        File f = new File(dataSourcePath);
+        if (!f.exists()) {
+            System.out.println("Input folder does not exist");
             System.exit(0);
         }
-        if (args.length == 3) {
-            File f = new File(args[2]);
-            dataOutputPath = f.getAbsolutePath();
+        if (execMode == 1) {
+
+            if (args.length != 3) {
+                System.out.println("Missing output folder");
+                System.exit(0);
+            } else {
+                // Number of arguments is correct
+                dataOutputPath = f.getAbsolutePath();
+                f = new File(dataOutputPath);
+                if (f.exists()) {
+                    // Warn user
+                    System.out.println("Output folder already exists");
+                    System.exit(0);
+                }
+            }
         }
 
         // Loadup a list of stopwords for sentences
@@ -415,7 +431,7 @@ public class CommentParser2 {
                 }
 
                 // Open the souce database file
-                File f = new File(dataSourcePath + fileNameOnly);
+                f = new File(dataSourcePath + fileNameOnly);
                 BufferedReader br = new BufferedReader (new FileReader(f));
                 String line;
 
