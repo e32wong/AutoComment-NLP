@@ -3,6 +3,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
@@ -386,18 +388,20 @@ public class CommentParser2 {
             System.exit(0);
         }
         if (execMode == 1) {
-
             if (args.length != 3) {
                 System.out.println("Missing output folder");
                 System.exit(0);
             } else {
                 // Number of arguments is correct
+                dataOutputPath = args[2];
                 f = new File(dataOutputPath);
-                dataOutputPath = f.getAbsolutePath();
                 if (f.exists()) {
                     // Warn user
                     System.out.println("Output folder already exists");
                     System.exit(0);
+                } else {
+                    Path path = Paths.get(dataOutputPath);
+                    Files.createDirectories(path);
                 }
             }
         }
