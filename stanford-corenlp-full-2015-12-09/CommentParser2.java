@@ -3,8 +3,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
-//import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
+import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 
 import edu.stanford.nlp.io.*;
 import edu.stanford.nlp.ling.*;
@@ -171,6 +171,49 @@ public class CommentParser2 {
         }
     }
 
+    static boolean validateNegative(String comment) {
+        // Compile the pattern
+        Pattern p = Pattern.compile("(" + stopWordPattern + ")");
+        Matcher m = p.matcher(comment.toLowerCase());
+
+        if (m.find()) {
+            return false;
+        } else { 
+            return true;
+        } 
+    } 
+
+    static boolean checkSentiment(CoreMap sentence) {
+
+        Tree sentTree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
+        int sentimentScore = RNNCoreAnnotations.getPredictedClass(sentTree);
+        switch (sentimentScore) {
+            case 0:
+                System.out.println("Very Negative");
+                break;
+            case 1:
+                System.out.println("Negative");
+                break;
+            case 2:
+                System.out.println("Neutral");
+                break;
+            case 3:
+                System.out.println("Positive");
+                break; 
+            case 4:
+                System.out.println("Very Positive");
+                break;
+            default:
+                System.out.println("Error");
+                break; 
+        }
+        if (sentimentScore <= 1) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     static String processLine(String line, StanfordCoreNLP pipeline) {
         // return string
         String processedString = "";
@@ -194,37 +237,20 @@ public class CommentParser2 {
         // Process one sentence at a time
         for(CoreMap sentence: sentences) {
 
+            // Remove negative sentence
+            if (validateNegative(sentence.toString()) == false) {
+                // discard
+                continue;
+            }
+
             // this is the parse tree of the current sentence
             Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
             //tree.pennPrint();
 
-            /*
-               Tree sentTree = sentence.get(SentimentCoreAnnotations.SentimentAnnotatedTree.class);
-               int sentimentScore = RNNCoreAnnotations.getPredictedClass(sentTree);
-               switch (sentimentScore) {
-               case 0:
-               System.out.println("Very Negative");
-               break;
-               case 1:
-               System.out.println("Negative");
-               break;
-               case 2:
-               System.out.println("Neutral");
-               break;
-               case 3:
-               System.out.println("Positive");
-               break;
-               case 4:
-               System.out.println("Very Positive");
-               break;
-               default:
-               System.out.println("Error");
-               break;
-               }
-               if (sentimentScore <= 1) {
-               continue;
-               }
-               */
+            //boolean result = checkSentiment(sentence);
+            //if (!result) {
+            //    continue;
+            //}
 
             // regex for matching
             TregexPattern p1 = TregexPattern.compile("VP << (NP < /NN.?/) < /VB.?/");
@@ -360,6 +386,9 @@ public class CommentParser2 {
             dataOutputPath = f.getAbsolutePath();
         }
 
+        // Loadup a list of stopwords for sentences
+        loadStopWord();
+
         // Create a StandfordCoreNLP object
         Properties props = new Properties();
         // props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
@@ -444,6 +473,7 @@ public class CommentParser2 {
             }
 
         } else {
+            // Input line mode
             String line = args[1];
             System.out.print(processLine(line, pipeline));
         }
