@@ -6,6 +6,7 @@ or
 bad
 fail
 error
+exception
 fix
 bug
 missing
@@ -19,6 +20,7 @@ incorrect
 instead
 likely
 maybe
+seems
 perhaps
 probably
 think
