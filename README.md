@@ -58,6 +58,10 @@ https://github.com/e32wong/clocom
 
 We had provided the configuration XMLs that we used
 in our experiements under the folder called "configurations".
-It contains all the heuristics.
-You will have to change in the folder names to suit your need.
+It contains all the settings for the clone detection tool, pruning heuristic and
+comment selection technique.
+You will have to change in the folder names in the XML files to suit your need.
 
+Usage:
+
+./cloneDigger.sh config.xml
