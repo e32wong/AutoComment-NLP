@@ -8,6 +8,8 @@ which can be checked out from the following link:
 
 https://github.com/e32wong/clocom
 
+The full paper is attached in this repository as ```paper.pdf```.
+
 ## Usage ##
 
 ### Stage 1 - Raw files: ###
